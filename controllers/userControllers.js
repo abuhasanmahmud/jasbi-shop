@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import User from "../model/userModel.js";
 import generateToken from "../utils/generateToken.js";
+import { sendEmail } from "../utils/sendMail.js";
 
 //login user
 //  route port /api/user/auth
@@ -52,6 +53,31 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
+//forge password
+//api /api/users/forgetpassword
+
+const forgetPassword=asyncHandler(async(req,res)=>{
+  const {email}=req.body;
+
+  const user=await User.findOne({email});
+  if(!user){
+    throw new Error("user not found");
+  }
+
+  const resetToken=user.getResetToken();
+  // console.log('resetToken',resetToken)
+  const url=`${process.env.FRONTEND_URL}/resetpassword/${resetToken}`
+
+  const message=`Click on the link to reset your password ${url}. if you have not request then please ignore it`
+  await sendEmail(user.email,"Reset password",message)
+
+  res.status(200).json({
+    success:true,
+    message:` Reset Token has been sent to ${email}`
+  })
+
+})
+
 //logout user
 //rotuer post /api/users/logout
 
@@ -101,4 +127,4 @@ const updateProfile = asyncHandler(async (req, res) => {
   }
 });
 
-export { authUser, registerUser, logOut, updateProfile, getUserProfile };
+export { authUser, registerUser, logOut, updateProfile, getUserProfile,forgetPassword };
