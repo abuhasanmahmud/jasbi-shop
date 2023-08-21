@@ -58,7 +58,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const forgetPassword=asyncHandler(async(req,res)=>{
   const {email}=req.body;
-console.log('email')
+// console.log('email')
   const user=await User.findOne({email});
   if(!user){
     throw new Error("user not found");
