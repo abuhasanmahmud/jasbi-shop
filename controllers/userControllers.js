@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import User from "../model/userModel.js";
 import generateToken from "../utils/generateToken.js";
 import { sendEmail } from "../utils/sendMail.js";
+import crypto from "crypto"
 
 //login user
 //  route port /api/user/auth
@@ -65,6 +66,7 @@ const forgetPassword=asyncHandler(async(req,res)=>{
   }
 
   const resetToken=user.getResetToken();
+  await user.save()
   // console.log('resetToken',resetToken)
   const url=`${process.env.FRONTEND_URL}/resetpassword/${resetToken}`
 
@@ -73,7 +75,32 @@ const forgetPassword=asyncHandler(async(req,res)=>{
 
   res.status(200).json({
     success:true,
-    message:` Reset Token has been sent to ${email}`
+    message:` Reset Token has been sent to ${email}`,
+    token:resetToken
+  })
+
+})
+
+
+const resetPassword=asyncHandler(async(req,res)=>{
+  const {token}=req.params
+  const resetPasswordToken=crypto.createHash('sha256').update(token).digest('hex');
+  const user=await User.findOne({resetPasswordToken,
+    resetPasswordExpire:{$gt:Date.now()}})
+
+    if(!user){
+      throw new Error("user token is invalid or has been expired");
+    }
+
+    user.password=req.body.password;
+    user.resetPasswordToken=undefined;
+    user.resetPasswordExpire=undefined;
+
+    await user.save()
+
+
+  res.status(200).json({
+    message:"User password successfully updated"
   })
 
 })
@@ -127,4 +154,4 @@ const updateProfile = asyncHandler(async (req, res) => {
   }
 });
 
-export { authUser, registerUser, logOut, updateProfile, getUserProfile,forgetPassword };
+export { authUser, registerUser, logOut, updateProfile, getUserProfile,forgetPassword,resetPassword };
