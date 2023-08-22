@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 // app.use("/", (req, res) => {
 //   res.send("app successfully running");
 // });
-console.log("ss");
+// console.log("ss");
 
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
