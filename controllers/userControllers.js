@@ -58,6 +58,7 @@ const registerUser = asyncHandler(async (req, res) => {
 //api /api/users/forgetpassword
 
 const forgetPassword=asyncHandler(async(req,res)=>{
+  // console.log(req.body)
   const {email}=req.body;
 // console.log('email')
   const user=await User.findOne({email});
@@ -83,10 +84,15 @@ const forgetPassword=asyncHandler(async(req,res)=>{
 
 
 const resetPassword=asyncHandler(async(req,res)=>{
+  
   const {token}=req.params
+  // console.log('password',req.body.password)
+  // console.log('token',token)
+
   const resetPasswordToken=crypto.createHash('sha256').update(token).digest('hex');
   const user=await User.findOne({resetPasswordToken,
-    resetPasswordExpire:{$gt:Date.now()}})
+    resetPasswordExpire:{$gt:Date.now()}
+  })
 
     if(!user){
       throw new Error("user token is invalid or has been expired");
@@ -100,7 +106,8 @@ const resetPassword=asyncHandler(async(req,res)=>{
 
 
   res.status(200).json({
-    message:"User password successfully updated"
+    message:"User password successfully updated",
+    user
   })
 
 })
